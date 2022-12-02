@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export PACKAGE_CORE_NAME="xray"
+export PACKAGE_CORE_VERSION=v1.6.5
+export PACKAGE_CORE_RELEASE_DOWNLOAD="https://github.com/XTLS/Xray-core/releases/download"

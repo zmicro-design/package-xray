@@ -1,0 +1,68 @@
+#!/bin/bash
+
+install() {
+  # prepare vars
+  local name="$PACKAGE_CORE_NAME"
+
+  log::info "[$(timestamp)][package][$name] preparing ..."
+
+  # get system os/arch
+  local arch="$PACKAGE_OS_ARCH"
+  local kernel="$PACKAGE_OS_KERNEL"
+  local platform="$PACKAGE_OS_PLATFORM"
+  # usr_bin_dir
+  local usr_bin_dir="$PACKAGE_USER_BIN_DIR"
+  local tmp_dir="$PACKAGE_TMP_DIR"
+
+  # files
+  local tmp_file="$name.zip"
+  local bin_file="./$name"
+
+  if [ "$platform" = "darwin" ]; then
+    platform="macos"
+  fi
+
+  if [ "$arch" = "arm64" ]; then
+    arch="arm64-v8a"
+  elif [ "$arch" = "amd64" ]; then
+    arch="64"
+  else
+    log::error "[$(timestamp)] unsupport arch: $arch"
+    return 1
+  fi
+
+  # prepare context
+  cd $tmp_dir
+
+  # reference: https://github.com/XTLS/Xray-core/releases
+  # example:
+  #   https://github.com/XTLS/Xray-core/releases/download/v5.1.0/xray-macos-arm64-v8a.zip
+  #   https://github.com/XTLS/Xray-core/releases/download/v5.1.0/xray-macos-64.zip
+  #   https://github.com/XTLS/Xray-core/releases/download/v5.1.0/xray-linux-arm64-v8a.zip
+  #   https://github.com/XTLS/Xray-core/releases/download/v5.1.0/xray-linux-64.zip
+  # generate url
+  local url="${PACKAGE_CORE_RELEASE_DOWNLOAD}/$PACKAGE_CORE_VERSION/${name}-${platform}-${arch}.zip"
+  log::debug "[$(timestamp)][package][$name][$kernel][$arch] url: $url, file: ${tmp_file}, tmp_dir: $tmp_dir"
+
+  # download
+  log::info "[$(timestamp)][package][$name] downloading ..."
+  os::download $tmp_file $url
+
+  # extract
+  log::info "[$(timestamp)][package][$name] extracting ..."
+  os::extract $tmp_file
+
+  # make executable
+  log::info "[$(timestamp)][package][$name] making executable ..."
+  chmod 755 $bin_file
+
+  # install
+  log::info "[$(timestamp)][package][$name] installing ..."
+  sudo mv $bin_file $usr_bin_dir
+
+  # clean
+  log::info "[$(timestamp)][package][$name] cleaning ..."
+  rm -rf $tmp_dir
+}
+
+export -f install
